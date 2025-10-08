@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from '@/react-app/components/Layout';
+import ProtectedRoute from '@/react-app/components/ProtectedRoute';
 import MenuForm from '@/react-app/components/MenuForm';
 import { 
   Plus,
@@ -23,6 +24,7 @@ export default function MenuManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [showForm, setShowForm] = useState<'category' | 'item' | null>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('mariaHavens_user');
@@ -69,6 +71,63 @@ export default function MenuManagement() {
     return matchesCategory && matchesSearch;
   });
 
+  const handleEditItem = (item: any) => {
+    setEditingItem(item);
+    setShowForm('item');
+  };
+
+  const handleEditCategory = (category: any) => {
+    setEditingItem(category);
+    setShowForm('category');
+  };
+
+  const handleDeleteItem = async (itemId: number, itemName: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${itemName}"? This will mark it as unavailable.`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/menu/items/${itemId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        fetchData(); // Refresh data
+      } else {
+        alert('Failed to delete menu item');
+      }
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      alert('Failed to delete menu item');
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: number, categoryName: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${categoryName}" category? This will also affect all items in this category.`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/menu/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        fetchData(); // Refresh data
+      } else {
+        alert('Failed to delete category');
+      }
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      alert('Failed to delete category');
+    }
+  };
+
+  const handleFormClose = () => {
+    setShowForm(null);
+    setEditingItem(null);
+  };
+
   if (loading) {
     return (
       <Layout title="Menu Management">
@@ -84,7 +143,8 @@ export default function MenuManagement() {
   }
 
   return (
-    <Layout title="Menu Management">
+    <ProtectedRoute allowedRoles={['admin', 'manager']} requiredPermission="manage_menu">
+      <Layout title="Menu Management">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -143,10 +203,18 @@ export default function MenuManagement() {
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-slate-900">{category.name}</h4>
                   <div className="flex space-x-1">
-                    <button className="p-1 text-slate-400 hover:text-slate-600 rounded">
+                    <button 
+                      onClick={() => handleEditCategory(category)}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded"
+                      title="Edit category"
+                    >
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-slate-400 hover:text-red-600 rounded">
+                    <button 
+                      onClick={() => handleDeleteCategory(category.id, category.name)}
+                      className="p-1 text-slate-400 hover:text-red-600 rounded"
+                      title="Delete category"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -185,10 +253,18 @@ export default function MenuManagement() {
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="font-semibold text-slate-900 text-sm">{item.name}</h4>
                   <div className="flex space-x-1">
-                    <button className="p-1 text-slate-400 hover:text-slate-600 rounded">
+                    <button 
+                      onClick={() => handleEditItem(item)}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded"
+                      title="Edit menu item"
+                    >
                       <Edit className="w-3 h-3" />
                     </button>
-                    <button className="p-1 text-slate-400 hover:text-red-600 rounded">
+                    <button 
+                      onClick={() => handleDeleteItem(item.id, item.name)}
+                      className="p-1 text-slate-400 hover:text-red-600 rounded"
+                      title="Delete menu item"
+                    >
                       <Trash2 className="w-3 h-3" />
                     </button>
                   </div>
@@ -238,16 +314,18 @@ export default function MenuManagement() {
           )}
         </div>
 
-        {/* Add Form Modal */}
+        {/* Add/Edit Form Modal */}
         {showForm && (
           <MenuForm
             type={showForm}
             categories={categories}
-            onClose={() => setShowForm(null)}
+            editData={editingItem}
+            onClose={handleFormClose}
             onSuccess={fetchData}
           />
         )}
       </div>
     </Layout>
+    </ProtectedRoute>
   );
 }

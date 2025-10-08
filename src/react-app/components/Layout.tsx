@@ -37,14 +37,25 @@ export default function Layout({ children, title }: LayoutProps) {
     navigate('/login');
   };
 
-  const navigation = [
-    { name: 'POS System', href: '/pos', icon: ShoppingCart },
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Staff Management', href: '/staff', icon: Users },
-    { name: 'Menu Management', href: '/menu', icon: UtensilsCrossed },
-    { name: 'Tables & Rooms', href: '/tables', icon: UtensilsCrossed },
-    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  ];
+  // Role-based navigation
+  const getNavigationForRole = (role: string) => {
+    const allNavigation = [
+      { name: 'Admin Dashboard', href: '/admin-dashboard', icon: Home, roles: ['admin'] },
+      { name: 'POS System', href: '/pos', icon: ShoppingCart, roles: ['admin', 'manager', 'waiter', 'receptionist'] },
+      { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['manager'] },
+      { name: 'Waiter Dashboard', href: '/waiter-dashboard', icon: Home, roles: ['waiter'] },
+      { name: 'Reception', href: '/reception-dashboard', icon: Home, roles: ['receptionist'] },
+      { name: 'Kitchen', href: '/kitchen', icon: Home, roles: ['chef'] },
+      { name: 'Staff Management', href: '/staff', icon: Users, roles: ['admin'] },
+      { name: 'Menu Management', href: '/menu', icon: UtensilsCrossed, roles: ['admin', 'manager'] },
+      { name: 'Tables & Rooms', href: '/tables', icon: UtensilsCrossed, roles: ['admin', 'manager', 'receptionist'] },
+      { name: 'Analytics', href: '/analytics', icon: BarChart3, roles: ['admin', 'manager'] },
+    ];
+
+    return allNavigation.filter(item => item.roles.includes(role));
+  };
+
+  const navigation = user?.staff?.role ? getNavigationForRole(user.staff.role) : [];
 
   return (
     <div className="min-h-screen bg-slate-50 flex">

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
 import Layout from '@/react-app/components/Layout';
+import ProtectedRoute from '@/react-app/components/ProtectedRoute';
 import StaffForm from '@/react-app/components/StaffForm';
 import { 
   Plus,
@@ -136,20 +137,9 @@ export default function StaffManagement() {
     );
   }
 
-  if (!user?.staff || user.staff.role !== 'admin') {
-    return (
-      <Layout title="Staff Management">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <Shield className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-900 mb-2">Access Denied</h3>
-          <p className="text-red-700">Only administrators can access staff management.</p>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
-    <Layout title="Staff Management">
+    <ProtectedRoute allowedRoles={['admin']} requiredPermission="manage_staff">
+      <Layout title="Staff Management">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -275,5 +265,6 @@ export default function StaffManagement() {
         />
       )}
     </Layout>
+    </ProtectedRoute>
   );
 }

@@ -32,16 +32,37 @@ export default function SimpleLogin() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('mariaHavens_user', JSON.stringify(data.user));
-        navigate('/pos');
+        
+        // Redirect based on user role
+        const userRole = data.user.staff.role;
+        switch (userRole) {
+          case 'admin':
+            navigate('/admin-dashboard');
+            break;
+          case 'manager':
+            navigate('/dashboard');
+            break;
+          case 'waiter':
+            navigate('/waiter-dashboard');
+            break;
+          case 'receptionist':
+            navigate('/reception-dashboard');
+            break;
+          case 'chef':
+            navigate('/kitchen');
+            break;
+          default:
+            navigate('/pos');
+        }
       } else {
         const errorData = await response.json();
         setError(errorData.error || 'Login failed');
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError('A network error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -63,7 +84,7 @@ export default function SimpleLogin() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-semibold text-white mb-2">Staff Login</h2>
-              <p className="text-slate-400 text-sm">Enter your credentials to access POS</p>
+              <p className="text-slate-400 text-sm">Enter your credentials to access the system</p>
             </div>
 
             {error && (
@@ -73,9 +94,7 @@ export default function SimpleLogin() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
               <input
                 type="email"
                 required
@@ -87,9 +106,7 @@ export default function SimpleLogin() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -112,7 +129,7 @@ export default function SimpleLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 disabled:from-slate-600 disabled:to-slate-700 text-black font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 disabled:from-slate-600 disabled:to-slate-700 text-black font-bold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-black"></div>
@@ -123,17 +140,10 @@ export default function SimpleLogin() {
                 </>
               )}
             </button>
-
-            
           </form>
-        </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-slate-500 text-sm">
-            Professional restaurant management for modern businesses
-          </p>
         </div>
       </div>
     </div>
   );
 }
+
