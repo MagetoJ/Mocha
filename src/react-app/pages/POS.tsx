@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from '@/react-app/components/Layout';
-import { 
+import {
   Search,
   ShoppingCart,
   Trash2,
@@ -14,8 +14,7 @@ import {
   LogOut,
   Eye,
   EyeOff,
-  FileText,
-  Settings
+  FileText
 } from 'lucide-react';
 import type { Staff, MenuItem, MenuCategory, Table } from '@/shared/types';
 
@@ -27,12 +26,6 @@ interface CartItem extends MenuItem {
 interface LoginCredentials {
   email: string;
   password: string;
-}
-
-interface WaiterPinModal {
-  waiterId: number;
-  waiterName: string;
-  pin: string;
 }
 
 export default function POS() {

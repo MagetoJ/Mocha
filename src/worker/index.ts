@@ -424,11 +424,11 @@ app.get("/api/receptionist/dashboard", async (c) => {
 
   return c.json({
     stats: {
-      totalTables: tableStats.total_tables || 0,
-      occupiedTables: tableStats.occupied_tables || 0,
+      totalTables: tableStats?.total_tables ?? 0,
+      occupiedTables: tableStats?.occupied_tables ?? 0,
       waitingGuests: waitingGuests.results.length,
-      todayCheckIns: todayStats.today_checkins || 0,
-      averageWaitTime: Math.round(todayStats.avg_wait_time || 0)
+      todayCheckIns: todayStats?.today_checkins ?? 0,
+      averageWaitTime: Math.round((todayStats?.avg_wait_time ?? 0) as number)
     },
     waitingGuests: waitingGuests.results,
     reservations: reservations.results
