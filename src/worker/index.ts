@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { hash, compare } from 'bcryptjs';
 
 // Define the environment bindings to resolve TypeScript errors
 interface Env {
@@ -9,12 +10,10 @@ interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Simple hashing function (for production, consider a more robust library)
+// Secure hashing function using bcrypt
 const hashPassword = async (password: string) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const saltRounds = 10;
+  return await hash(password, saltRounds);
 };
 
 // Enable CORS for all routes
@@ -40,8 +39,8 @@ app.post("/api/login", async (c) => {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
-  const hashedPassword = await hashPassword(password);
-  if (hashedPassword !== staff.password) {
+  const isPasswordValid = await compare(password, staff.password);
+  if (!isPasswordValid) {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
@@ -131,8 +130,7 @@ app.post("/api/upload", async (c) => {
         httpMetadata: { contentType: file.type },
     });
 
-    // IMPORTANT: Replace this placeholder with your actual R2 public URL
-    const publicUrl = `https://pub-your-r2-public-id.r2.dev/${fileName}`;
+    const publicUrl = `https://pub-3ddff8a25cb240ebbbff4630494b73c3.r2.dev/${fileName}`;
 
     return c.json({ url: publicUrl });
 });
@@ -617,4 +615,3 @@ app.get("/api/receptionist/available-tables", async (c) => {
 });
 
 export default app;
-

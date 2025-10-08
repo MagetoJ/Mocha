@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { hasPermission, type StaffRole } from '@/shared/types';
+import { hasPermission, type StaffRole } from '../../shared/types';
 import { AlertTriangle } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -25,7 +25,7 @@ export default function ProtectedRoute({
     const storedUser = localStorage.getItem('mariaHavens_user');
     
     if (!storedUser) {
-      navigate('/login');
+      navigate(fallbackPath);
       return;
     }
 
@@ -34,7 +34,7 @@ export default function ProtectedRoute({
 
     // Check permissions
     if (!userData?.staff?.role) {
-      navigate('/login');
+      navigate(fallbackPath);
       return;
     }
 
@@ -62,18 +62,18 @@ export default function ProtectedRoute({
     }
 
     setLoading(false);
-  }, [navigate, requiredPermission, allowedRoles]);
+  }, [navigate, requiredPermission, allowedRoles, fallbackPath]);
 
   const getRoleDashboard = (role: StaffRole): string => {
     switch (role) {
       case 'admin':
-        return '/dashboard';
+        return '/admin-dashboard';
       case 'manager':
         return '/dashboard';
       case 'waiter':
         return '/pos';
       case 'receptionist':
-        return '/tables';
+        return '/reception-dashboard';
       case 'chef':
         return '/kitchen';
       default:
@@ -111,3 +111,4 @@ export default function ProtectedRoute({
 
   return <>{children}</>;
 }
+

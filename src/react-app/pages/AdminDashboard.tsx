@@ -1,20 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from '@/react-app/components/Layout';
+import Layout from '../components/Layout';
 import {
   Users,
-  TrendingUp,
   DollarSign,
   Star,
   Award,
   BarChart3,
   Activity,
-  Clock,
   Target,
   Eye,
   UserCheck,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  X
 } from 'lucide-react';
 import type { Staff } from '@/shared/types';
 
@@ -73,7 +72,7 @@ export default function AdminDashboard() {
   const [rolePerformance, setRolePerformance] = useState<RolePerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedView, setSelectedView] = useState<'overview' | 'staff' | 'roles'>('overview');
-  const [selectedStaff, setSelectedStaff] = useState<number | null>(null);
+  const [selectedStaffId, setSelectedStaffId] = useState<number | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('mariaHavens_user');
@@ -146,6 +145,9 @@ export default function AdminDashboard() {
       minimumFractionDigits: 0
     }).format(amount);
   };
+  
+  const selectedStaff = performanceData.find(s => s.id === selectedStaffId);
+
 
   if (loading) {
     return (
@@ -408,7 +410,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="p-4">
                           <button 
-                            onClick={() => setSelectedStaff(staff.id)}
+                            onClick={() => setSelectedStaffId(staff.id)}
                             className="text-purple-600 hover:text-purple-900 text-sm font-medium flex items-center"
                           >
                             <Eye className="w-4 h-4 mr-1" />
@@ -478,6 +480,57 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Staff Details Modal */}
+      {selectedStaff && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-lg w-full">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {selectedStaff.first_name} {selectedStaff.last_name}'s Performance
+              </h3>
+              <button onClick={() => setSelectedStaffId(null)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 grid grid-cols-2 gap-4">
+              <div className="bg-slate-50 p-4 rounded-lg">
+                <p className="text-sm text-slate-500">Total Sales</p>
+                <p className="text-xl font-bold">{formatCurrency(selectedStaff.total_sales || 0)}</p>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-lg">
+                <p className="text-sm text-slate-500">Orders Served</p>
+                <p className="text-xl font-bold">{selectedStaff.orders_served || 0}</p>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-lg">
+                <p className="text-sm text-slate-500">Avg. Rating</p>
+                <p className="text-xl font-bold">{(selectedStaff.customer_rating_avg || 0).toFixed(1)}</p>
+              </div>
+               <div className="bg-slate-50 p-4 rounded-lg">
+                <p className="text-sm text-slate-500">Tips Earned</p>
+                <p className="text-xl font-bold">{formatCurrency(selectedStaff.tips_earned || 0)}</p>
+              </div>
+               <div className="bg-slate-50 p-4 rounded-lg">
+                <p className="text-sm text-slate-500">Sales/Hour</p>
+                <p className="text-xl font-bold">{formatCurrency(selectedStaff.sales_per_hour || 0)}</p>
+              </div>
+               <div className="bg-slate-50 p-4 rounded-lg">
+                <p className="text-sm text-slate-500">Orders/Hour</p>
+                <p className="text-xl font-bold">{(selectedStaff.orders_per_hour || 0).toFixed(2)}</p>
+              </div>
+            </div>
+             <div className="p-6 border-t border-slate-200 text-right">
+                <button
+                  onClick={() => setSelectedStaffId(null)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200"
+                >
+                  Close
+                </button>
+              </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
+

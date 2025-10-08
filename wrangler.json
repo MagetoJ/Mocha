@@ -4,6 +4,7 @@
   "main": "./src/worker/index.ts",
   "compatibility_date": "2025-06-17",
   "compatibility_flags": ["nodejs_compat"],
+  "account_id": "be7b8ec33190c5f7e431eef2ee03eb0f",
   "observability": {
     "enabled": true
   },
