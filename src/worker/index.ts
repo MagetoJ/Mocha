@@ -3,9 +3,11 @@ import { cors } from "hono/cors";
 import { hash, compare } from 'bcryptjs';
 
 // Define the environment bindings to resolve TypeScript errors
+// Define the environment bindings to resolve TypeScript errors
 interface Env {
   DB: D1Database;
   R2_BUCKET: R2Bucket;
+  ASSETS: Fetcher;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -613,5 +615,10 @@ app.get("/api/receptionist/available-tables", async (c) => {
   
   return c.json(results);
 });
-
+// --- STATIC ASSET SERVING ---
+// This must be the last route in your file.
+// It proxies all non-API requests to the static assets service.
+app.get('*', (c) => {
+  return c.env.ASSETS.fetch(c.req.raw)
+})
 export default app;

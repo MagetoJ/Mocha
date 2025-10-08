@@ -1,0 +1,23 @@
+# A descriptive name for your Worker
+name = "maria-havens-worker"
+
+# The entrypoint for your backend Worker code
+main = "src/worker/index.ts"
+
+compatibility_date = "2025-10-08"
+account_id = "be7b8ec33190c5f7e431eef2ee03eb0f"
+
+# This tells Wrangler where your static frontend assets are
+[site]
+bucket = "./dist/client"
+
+# Your database binding (which is already correct)
+[[d1_databases]]
+binding = "DB"
+database_name = "maria-havens"
+database_id = "9f0b5394-58ef-4c76-9d41-6f123d08da29"
+
+# Your R2 bucket binding
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "0199c326-ff38-7723-a41d-ac28fbe57801"
