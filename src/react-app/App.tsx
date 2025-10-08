@@ -16,7 +16,8 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<POSPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<SimpleLoginPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />

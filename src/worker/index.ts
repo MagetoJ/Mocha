@@ -79,7 +79,16 @@ app.post("/api/staff", async (c) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `).bind(employee_id, first_name, last_name, email || null, phone || null, role, pin || null, hashedPassword).run();
 
-  return c.json({ id: result.meta.last_row_id, success: true });
+  const newStaffId = result.meta.last_row_id;
+
+  // Automatically create initial staff performance record for today
+  await c.env.DB.prepare(`
+    INSERT OR IGNORE INTO staff_performance 
+    (staff_id, date, orders_served, total_sales, tables_served, shift_duration_minutes, customer_rating_avg, tips_earned, created_at, updated_at)
+    VALUES (?, date('now'), 0, 0.00, 0, 0, 0.00, 0.00, datetime('now'), datetime('now'))
+  `).bind(newStaffId).run();
+
+  return c.json({ id: newStaffId, success: true });
 });
 
 app.put("/api/staff/:id", async (c) => {
@@ -330,6 +339,35 @@ app.get("/api/performance/by-role", async (c) => {
     ORDER BY total_sales DESC
   `).all();
   return c.json(results);
+});
+
+// Initialize performance records for existing staff (admin utility endpoint)
+app.post("/api/performance/initialize", async (c) => {
+  // Get all active staff members
+  const { results: allStaff } = await c.env.DB.prepare(`
+    SELECT id FROM staff WHERE is_active = 1
+  `).all();
+
+  let initializedCount = 0;
+  
+  // Create performance records for each staff member for today if they don't exist
+  for (const staff of allStaff) {
+    const result = await c.env.DB.prepare(`
+      INSERT OR IGNORE INTO staff_performance 
+      (staff_id, date, orders_served, total_sales, tables_served, shift_duration_minutes, customer_rating_avg, tips_earned, created_at, updated_at)
+      VALUES (?, date('now'), 0, 0.00, 0, 0, 0.00, 0.00, datetime('now'), datetime('now'))
+    `).bind(staff.id).run();
+    
+    if (result.meta.changes > 0) {
+      initializedCount++;
+    }
+  }
+
+  return c.json({ 
+    success: true, 
+    message: `Initialized performance records for ${initializedCount} staff members`,
+    totalStaff: allStaff.length
+  });
 });
 
 // --- RECEPTIONIST DASHBOARD ---
