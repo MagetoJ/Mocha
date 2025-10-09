@@ -62,22 +62,3 @@ CREATE INDEX idx_waiting_guests_status ON waiting_guests(status);
 CREATE INDEX idx_waiting_guests_arrived_at ON waiting_guests(arrived_at);
 CREATE INDEX idx_guest_checkins_table_id ON guest_checkins(table_id);
 CREATE INDEX idx_guest_checkins_staff_id ON guest_checkins(staff_id);
-
--- Add sample reservations for today and tomorrow
-INSERT INTO reservations (guest_name, guest_phone, guest_email, party_size, reservation_date, reservation_time, status, special_requests, staff_id) VALUES
-('John Smith', '+254712345678', 'john.smith@email.com', 4, date('now'), '19:00:00', 'confirmed', 'Window seat preferred', (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com')),
-('Mary Johnson', '+254798765432', 'mary.johnson@email.com', 2, date('now'), '18:30:00', 'confirmed', 'Anniversary dinner', (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com')),
-('David Wilson', '+254701234567', 'david.wilson@email.com', 6, date('now'), '20:00:00', 'confirmed', 'Birthday celebration', (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com')),
-('Sarah Brown', '+254723456789', 'sarah.brown@email.com', 3, date('now', '+1 day'), '19:30:00', 'confirmed', NULL, (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com')),
-('Michael Davis', '+254734567890', 'michael.davis@email.com', 2, date('now', '+1 day'), '18:00:00', 'confirmed', 'Vegetarian meals required', (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com'));
-
--- Add sample waiting guests
-INSERT INTO waiting_guests (guest_name, guest_phone, party_size, arrived_at, estimated_wait_minutes, staff_id) VALUES
-('Emma Thompson', '+254756789012', 3, datetime('now', '-10 minutes'), 15, (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com')),
-('Robert Garcia', '+254767890123', 2, datetime('now', '-5 minutes'), 10, (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com')),
-('Lisa Anderson', NULL, 4, datetime('now', '-20 minutes'), 25, (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com'));
-
--- Add sample guest check-ins from earlier today
-INSERT INTO guest_checkins (reservation_id, table_id, staff_id, guest_name, party_size, checked_in_at) VALUES
-((SELECT id FROM reservations WHERE guest_name = 'John Smith'), 1, (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com'), 'John Smith', 4, datetime('now', '-3 hours')),
-((SELECT id FROM reservations WHERE guest_name = 'Mary Johnson'), 2, (SELECT id FROM staff WHERE email = 'receptionist@mariahavens.com'), 'Mary Johnson', 2, datetime('now', '-2 hours'));

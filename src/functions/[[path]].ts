@@ -21,12 +21,6 @@ app.use("*", cors({
 
 // --- API ROUTES ---
 
-// Secure hashing function used by API routes
-const hashPassword = async (password: string) => {
-  const saltRounds = 10;
-  return await hash(password, saltRounds);
-};
-
 // --- AUTHENTICATION ---
 app.post("/api/login", async (c) => {
   const { email, password } = await c.req.json();
@@ -50,25 +44,30 @@ app.get("/api/staff", async (c) => {
 app.post("/api/staff", async (c) => {
   const { employee_id, first_name, last_name, email, phone, role, pin, password } = await c.req.json();
   if (!password) { return c.json({ error: "Password is required for new staff members" }, 400); }
-  const hashedPassword = await hashPassword(password);
+  
+  const hashedPassword = await hash(password, 10); // CORRECTED: Use bcryptjs hash
+
   const result = await c.env.DB.prepare(`
     INSERT INTO staff (employee_id, first_name, last_name, email, phone, role, pin, password, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `).bind(employee_id, first_name, last_name, email || null, phone || null, role, pin || null, hashedPassword).run();
+  
   const newStaffId = result.meta.last_row_id;
   await c.env.DB.prepare(`
     INSERT OR IGNORE INTO staff_performance 
     (staff_id, date, created_at, updated_at)
     VALUES (?, date('now'), datetime('now'), datetime('now'))
   `).bind(newStaffId).run();
+  
   return c.json({ id: newStaffId, success: true });
 });
 
 app.put("/api/staff/:id", async (c) => {
   const staffId = c.req.param("id");
   const { employee_id, first_name, last_name, email, phone, role, pin, is_active, password } = await c.req.json();
+  
   if (password && password.length > 0) {
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hash(password, 10); // CORRECTED: Use bcryptjs hash
     await c.env.DB.prepare(
       `UPDATE staff SET employee_id = ?, first_name = ?, last_name = ?, email = ?, phone = ?, role = ?, pin = ?, is_active = ?, password = ?, updated_at = datetime('now') WHERE id = ?`
     ).bind(employee_id, first_name, last_name, email || null, phone || null, role, pin || null, is_active ? 1 : 0, hashedPassword, staffId).run();
@@ -91,12 +90,11 @@ app.post("/api/upload", async (c) => {
     const formData = await c.req.formData();
     const fileValue = formData.get("file");
 
-    // Corrected Type Check: This handles the TypeScript error safely.
     if (!fileValue || typeof fileValue === 'string') {
         return c.json({ error: "No file provided or invalid file format" }, 400);
     }
     
-    const file = fileValue as File; // Safely cast to File
+    const file = fileValue as File;
 
     const fileExtension = file.name.split('.').pop();
     const fileName = `${crypto.randomUUID()}.${fileExtension}`;

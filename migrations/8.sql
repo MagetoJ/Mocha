@@ -1,5 +1,5 @@
--- Create staff_performance table to track daily performance metrics
-CREATE TABLE staff_performance (
+-- Create staff_performance table to track daily performance metrics, ensuring it doesn't fail if it already exists.
+CREATE TABLE IF NOT EXISTS staff_performance (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     staff_id INTEGER NOT NULL,
     date DATE NOT NULL,
@@ -15,10 +15,7 @@ CREATE TABLE staff_performance (
     UNIQUE(staff_id, date)
 );
 
--- Create indexes for better query performance
-CREATE INDEX idx_staff_performance_staff_id ON staff_performance(staff_id);
-CREATE INDEX idx_staff_performance_date ON staff_performance(date);
-CREATE INDEX idx_staff_performance_total_sales ON staff_performance(total_sales);
-
--- Performance data will be populated automatically by the application
--- based on actual staff activities and dashboard interactions
+-- Create indexes for better query performance, ensuring they don't fail if they already exist.
+CREATE INDEX IF NOT EXISTS idx_staff_performance_staff_id ON staff_performance(staff_id);
+CREATE INDEX IF NOT EXISTS idx_staff_performance_date ON staff_performance(date);
+CREATE INDEX IF NOT EXISTS idx_staff_performance_total_sales ON staff_performance(total_sales);
